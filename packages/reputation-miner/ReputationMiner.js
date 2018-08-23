@@ -230,6 +230,7 @@ class ReputationMiner {
       const logEntryNumber = await this.getLogEntryNumberForLogUpdateNumber(logEntryUpdateNumber, blockNumber);
       logEntry = await repCycle.getReputationUpdateLogEntry(logEntryNumber, { blockNumber });
       score = this.getScore(updateNumber, logEntry[1]);
+
       // When reputation score update is negative, adjust its value for child reputation updates
       // We update colonywide sums first (children, parents, skill)
       // Then the user-specifc sums in the order children, parents, skill.
@@ -255,7 +256,6 @@ class ReputationMiner {
             .sub(innerUpdateNumber)
             .add(nUpdates)
             .sub(1);
-
           const keyForActualUserSkillRep = await this.getKeyForUpdateNumber(updateNumberForActualUserSkillRep.toNumber());
 
           const keyAlreadyExists = this.reputations[keyForActualUserSkillRep] !== undefined;
@@ -265,12 +265,18 @@ class ReputationMiner {
             const existingValueForActualUserSkillRep = ethers.utils.bigNumberify(`0x${valueForActualUserSkillRep.slice(2, 66)}`);
 
             if (!existingValueForActualUserSkillRep.isZero()) {
-              const key = await this.getKeyForUpdateNumber(updateNumber);
+              let key;
+              // For colony wide reputation updates, consider the key of the actual user reputation
+              if (innerUpdateNumber.lt(nChildUpdates)) {
+                const updateNumberForActualChildSkillRep = updateNumber.add(nUpdates.div(2));
+                key = await this.getKeyForUpdateNumber(updateNumberForActualChildSkillRep);
+              } else {
+                key = await this.getKeyForUpdateNumber(updateNumber);
+              }
 
               const keyExists = this.reputations[key] !== undefined;
               if (keyExists) {
                 const reputation = ethers.utils.bigNumberify(`0x${this.reputations[key].slice(2, 66)}`);
-
                 // todo bn.js doesn't have decimals so is fraction precision enough here?
                 const targetScore = reputation.mul(score).div(existingValueForActualUserSkillRep);
                 score = targetScore;
