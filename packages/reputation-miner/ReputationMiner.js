@@ -807,6 +807,7 @@ class ReputationMiner {
     // );
     // console.log('intermediatRootHash2', impliedRoot3);
     // console.log('implied jrh from irh2', impliedRoot4);
+
     const tx = await repCycle.respondToChallenge(
       [
         round,
@@ -819,7 +820,8 @@ class ReputationMiner {
         this.justificationHashes[lastAgreeKey].newestReputationProof.branchMask,
         "0",
         logEntryNumber,
-        "0"
+        "0",
+        "1"
       ],
       reputationKey,
       this.justificationHashes[firstDisagreeKey].justUpdatedProof.siblings,
