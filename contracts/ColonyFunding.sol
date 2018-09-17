@@ -283,7 +283,7 @@ contract ColonyFunding is ColonyStorage, PatriciaTreeProofs {
     bytes value,
     uint256 branchMask,
     bytes32[] siblings
-  ) internal returns (uint256)
+  ) internal view returns (uint256)
   {
     bytes32 impliedRoot = getImpliedRoot(key, value, branchMask, siblings);
     require(rootHash == impliedRoot, "colony-reputation-invalid-root-hash");

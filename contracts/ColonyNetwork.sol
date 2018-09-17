@@ -108,7 +108,7 @@ contract ColonyNetwork is ColonyNetworkStorage {
     miningCycleResolver = _miningResolver;
   }
 
-  function getMiningResolver() public returns (address) {
+  function getMiningResolver() public view returns (address) {
     return miningCycleResolver;
   }
 
