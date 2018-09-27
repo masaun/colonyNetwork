@@ -415,7 +415,7 @@ contract("ColonyNetworkMining", accounts => {
 
       const addr = await colonyNetwork.getReputationMiningCycle(true);
       const repCycle = await IReputationMiningCycle.at(addr);
-      await checkErrorRevert(repCycle.confirmNewHash(0), "colony-reputation-mining-final-round-not-completed");
+      await checkErrorRevert(repCycle.confirmNewHash(0), "colony-reputation-mining-final-round-not-completed1");
       const newAddr = await colonyNetwork.getReputationMiningCycle(true);
       assert(newAddr !== 0x0);
       assert(addr !== 0x0);
@@ -514,7 +514,7 @@ contract("ColonyNetworkMining", accounts => {
 
       await checkErrorRevert(repCycle.invalidateHash(0, 1), "colony-reputation-mining-failed-to-respond-in-time");
       await forwardTime(1800, this);
-      await checkErrorRevert(repCycle.confirmNewHash(1), "colony-reputation-mining-final-round-not-completed");
+      await checkErrorRevert(repCycle.confirmNewHash(1), "colony-reputation-mining-final-round-not-completed1");
       await accommodateChallengeAndInvalidateHash(this, goodClient, badClient);
       await repCycle.confirmNewHash(1);
     });
@@ -1764,7 +1764,7 @@ contract("ColonyNetworkMining", accounts => {
       await badClient.submitJustificationRootHash();
 
       await accommodateChallengeAndInvalidateHash(this, goodClient, badClient);
-      await checkErrorRevert(repCycle.confirmNewHash(0), "colony-reputation-mining-final-round-not-completed");
+      await checkErrorRevert(repCycle.confirmNewHash(0), "colony-reputation-mining-final-round-not-completed2");
       await repCycle.confirmNewHash(1);
     });
 
@@ -2305,7 +2305,7 @@ contract("ColonyNetworkMining", accounts => {
       await badClient.submitJustificationRootHash();
 
       await accommodateChallengeAndInvalidateHash(this, goodClient, badClient);
-      await checkErrorRevert(repCycle.confirmNewHash(0), "colony-reputation-mining-final-round-not-completed");
+      await checkErrorRevert(repCycle.confirmNewHash(0), "colony-reputation-mining-final-round-not-completed2");
       await repCycle.confirmNewHash(1);
     });
 
