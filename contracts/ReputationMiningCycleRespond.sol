@@ -392,7 +392,7 @@ contract ReputationMiningCycleRespond is ReputationMiningCycleStorage, PatriciaT
     // i.e. a reputation can't be negative.
     if (u[U_DECAY_TRANSITION] == 1) {
       // Very large reputation decays are calculated the 'other way around' to avoid overflows.
-      if (_agreeStateReputationValue > uint256(2**256 - 1)/uint256(10**15)) {
+      if (_agreeStateReputationValue > uint256(2**128-1)/uint256(10**15)) {
         require(_disagreeStateReputationValue == (_agreeStateReputationValue/1000000000000000)*999679150010888, "colony-reputation-mining-decay-incorrect");
       } else {
         require(_disagreeStateReputationValue == (_agreeStateReputationValue*999679150010888)/1000000000000000, "colony-reputation-mining-decay-incorrect");
@@ -401,8 +401,10 @@ contract ReputationMiningCycleRespond is ReputationMiningCycleStorage, PatriciaT
       int amount = logEntry.amount;
       if (amount >= 0) {
         // Don't allow reputation to overflow
+        require(uint(amount) <= 2**128-1, "colony-reputation-mining-amount-exceeds-max");
+        require(_agreeStateReputationValue <= 2**128-1, "colony-reputation-mining-agreed-state-value-exceeds-max");
         if (uint(amount) + _agreeStateReputationValue < _agreeStateReputationValue) {
-          require(_disagreeStateReputationValue == 2**256 - 1, "colony-reputation-mining-reputation-not-max-uint");
+          require(_disagreeStateReputationValue == 2**128 - 1, "colony-reputation-mining-reputation-not-max-uint128");
         } else {
           // TODO: Is this safe? I think so, because even if there's over/underflows, they should still be the same number.
           // Can't we convert `amount` to uint instead of these explicit converstions to (int)? For sufficiently large uints this converstion would produce the wrong results?
@@ -422,9 +424,7 @@ contract ReputationMiningCycleRespond is ReputationMiningCycleStorage, PatriciaT
             ((relativeUpdateNumber >= logEntry.nUpdates/2) && relativeUpdateNumber < (logEntry.nUpdates/2+nChildUpdates))) {
           // We are working with a child update! Check adjusted amount instead of this impossible calculation
           // int childAmount = amount * _agreeStateReputationValue / _originSkillReputationValue
-          // TODO: There is a potential overflow here (see below) which we're agreed to deal with via limiting the reputation amount to a uint128 max value
-          // if (uint(amount * -1) > uint256(2**256 - 1) / _agreeStateReputationValue)
-          
+         
           // Don't allow origin reputation to underflow
           if (uint(amount * -1) > originReputationValue) {
             require(_disagreeStateReputationValue == 0, "colony-reputation-mining-reputation-value-non-zero");

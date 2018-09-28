@@ -341,7 +341,7 @@ contract ReputationMiningCycle is ReputationMiningCycleStorage, PatriciaTreeProo
 
   function appendReputationUpdateLog(
     address _user,
-    int _amount,
+    int256 _amount,
     uint256 _skillId,
     address _colonyAddress,
     uint256 _nParents,
@@ -358,9 +358,18 @@ contract ReputationMiningCycle is ReputationMiningCycleStorage, PatriciaTreeProo
     if (_amount < 0) {
       nUpdates += 2 * _nChildren;
     }
+
+    int256 amount = _amount;
+    // Cap reputation amount to -/+ 2**128-1
+    if (_amount > int(2**128-1)) {
+      amount = 2**128-1;
+    } else if (_amount < int(2**128-1)*(-1)) {
+      amount = (2**128-1)*(-1);
+    }
+
     reputationUpdateLog.push(ReputationLogEntry(
       _user,
-      _amount,
+      amount, // Potentially adjusted amount to -/+ 2**128-1 scope
       _skillId,
       _colonyAddress,
       nUpdates,
@@ -442,9 +451,16 @@ contract ReputationMiningCycle is ReputationMiningCycleStorage, PatriciaTreeProo
     for (uint256 i = 0; i < stakers.length; i++) {
       // We *know* we're the first entries in this reputation update log, so we don't need all the bookkeeping in
       // the AppendReputationUpdateLog function
+
+      int256 amount = int256(reward);
+      // Cap reputation amount to -/+ 2**128-1
+      if (amount > int(2**128-1)) {
+        amount = 2**128-1;
+      }
+
       reputationUpdateLog.push(ReputationLogEntry(
         stakers[i],
-        int256(reward),
+        amount,
         miningSkillId, //This should be the special 'mining' skill.
         commonColonyAddress, // They earn this reputation in the common colony.
         4, // Updates the user's skill, and the colony's skill, both globally and for the special 'mining' skill

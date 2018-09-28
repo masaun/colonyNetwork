@@ -501,6 +501,13 @@ contract ColonyTask is ColonyStorage {
     reputation = SafeMath.mulInt(payout, ratingMultipliers[rating - 1]);
     reputation = SafeMath.subInt(reputation, rateFail ? payout : 0); // Deduct penalty for not rating
     reputation /= ratingDivisor; // We may lose one atom of reputation here :sad:
+
+    // Cap reputation to -/+ 2**128-1
+    if (reputation > 2**128-1) {
+      reputation = 2**128-1;
+    } else if (reputation < (2**128-1)*(-1)) {
+      reputation = (2**128-1)*(-1);
+    }
   }
 
   function getReviewerAddresses(
