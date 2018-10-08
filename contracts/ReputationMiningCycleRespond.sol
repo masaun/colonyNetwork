@@ -432,12 +432,19 @@ contract ReputationMiningCycleRespond is ReputationMiningCycleStorage, PatriciaT
             require(_agreeStateReputationValue - _disagreeStateReputationValue == ((uint(amount * -1) * _agreeStateReputationValue) / originReputationValue), "colony-reputation-mining-child-reputation-value-incorrect");
           }
 
-          checkOriginReputationInState(
-            u,
-            _agreeStateSiblings,
-            _originReputationKey,
-            _originReputationValueBytes,
-            _originReputationSiblings);
+          uint256 originReputationUID;
+          assembly {
+            originReputationUID := mload(add(_originReputationValueBytes, 64))
+          }
+          // If origin skill reputation exists, check it 
+          if (originReputationUID != 0) {
+            checkOriginReputationInState(
+              u,
+              _agreeStateSiblings,
+              _originReputationKey,
+              _originReputationValueBytes,
+              _originReputationSiblings);
+          }
         } else {
           // Don't allow reputation to underflow
           if (uint(amount * -1) > _agreeStateReputationValue) {
