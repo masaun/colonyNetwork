@@ -27,11 +27,6 @@ contract ColonyFunding is ColonyStorage, PatriciaTreeProofs {
   event RewardPayoutCycleEnded(uint256 indexed id);
   event TaskWorkerPayoutChanged(uint256 indexed id, address token, uint256 amount);
 
-  function getFeeInverse() public pure returns (uint256) {
-    // TODO: refer to ColonyNetwork
-    return 100;
-  }
-
   function getRewardInverse() public pure returns (uint256) {
     // TODO: Make settable by colony
     return 100;
@@ -104,7 +99,7 @@ contract ColonyFunding is ColonyStorage, PatriciaTreeProofs {
     pots[task.potId].balance[_token] = sub(pots[task.potId].balance[_token], payout);
     nonRewardPotsTotal[_token] = sub(nonRewardPotsTotal[_token], payout);
 
-    uint fee = payout / getFeeInverse();
+    uint fee = payout / getNetworkFeeInverse();
     uint remainder = sub(payout, fee);
 
     if (_token == 0x0) {
@@ -387,5 +382,10 @@ contract ColonyFunding is ColonyStorage, PatriciaTreeProofs {
     getTotalTaskPayout(_id, _token);
 
     updateTaskPayoutsWeCannotMakeAfterBudgetChange(_id, _token, currentTotalAmount);
+  }
+
+  function getNetworkFeeInverse() private view returns (uint256 feeInverse) {
+    IColonyNetwork colonyNetworkContract = IColonyNetwork(colonyNetworkAddress);
+    feeInverse = colonyNetworkContract.getFeeInverse();
   }
 }

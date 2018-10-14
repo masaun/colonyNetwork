@@ -75,6 +75,7 @@ contract("Colony", accounts => {
   let otherToken;
   let authority;
   let colonyNetwork;
+  let metaColony;
 
   before(async () => {
     const resolverColonyNetworkDeployed = await Resolver.deployed();
@@ -91,7 +92,9 @@ contract("Colony", accounts => {
 
     const clnyToken = await Token.new("Colony Network Token", "CLNY", 18);
     await colonyNetwork.createMetaColony(clnyToken.address);
-
+    const metaColonyAddress = await colonyNetwork.getMetaColony();
+    metaColony = await IColony.at(metaColonyAddress);
+    await metaColony.setNetworkFeeInverse(100);
     // Jumping through these hoops to avoid the need to rewire ReputationMiningCycleResolver.
     const deployedColonyNetwork = await IColonyNetwork.at(EtherRouter.address);
     const reputationMiningCycleResolverAddress = await deployedColonyNetwork.getMiningResolver();
@@ -1294,8 +1297,6 @@ contract("Colony", accounts => {
       const taskId = await makeTask({ colony });
 
       // Acquire meta colony, create new global skill, assign new task's skill
-      const metaColonyAddress = await colonyNetwork.getMetaColony();
-      const metaColony = await IColony.at(metaColonyAddress);
       await metaColony.addGlobalSkill(1);
 
       const skillCount = await colonyNetwork.getSkillCount();
@@ -1733,12 +1734,11 @@ contract("Colony", accounts => {
         workerPayout: 200
       });
       await colony.finalizeTask(taskId);
-      const metaColonyAddress = await colonyNetwork.getMetaColony();
       const balanceBefore = await web3GetBalance(MANAGER);
-      const metaBalanceBefore = await web3GetBalance(metaColonyAddress);
+      const metaBalanceBefore = await web3GetBalance(metaColony.address);
       await colony.claimPayout(taskId, MANAGER_ROLE, 0x0, { gasPrice: 0 });
       const balanceAfter = await web3GetBalance(MANAGER);
-      const metaBalanceAfter = await web3GetBalance(metaColonyAddress);
+      const metaBalanceAfter = await web3GetBalance(metaColony.address);
       assert.equal(
         toBN(balanceAfter)
           .sub(toBN(balanceBefore))
