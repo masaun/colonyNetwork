@@ -44,7 +44,7 @@ contract("Meta Colony", accounts => {
     await setupColonyVersionResolver(colonyTemplate, colonyTask, colonyFunding, contractRecovery, resolver, colonyNetwork);
 
     metaColonyToken = await Token.new("Colony Network Token", "CLNY", 18);
-    await colonyNetwork.createMetaColony(metaColonyToken.address);
+    await colonyNetwork.createMetaColony(metaColonyToken.address, 100);
     const metaColonyAddress = await colonyNetwork.getMetaColony();
     metaColony = await IMetaColony.at(metaColonyAddress);
 
@@ -314,7 +314,7 @@ contract("Meta Colony", accounts => {
     beforeEach(async () => {
       TOKEN_ARGS = getTokenArgs();
       const newToken = await Token.new(...TOKEN_ARGS);
-      const { logs } = await colonyNetwork.createColony(newToken.address);
+      const { logs } = await colonyNetwork.createColony(newToken.address, 100);
       const { colonyAddress } = logs[0].args;
       colony = await IColony.at(colonyAddress);
       const tokenAddress = await colony.getToken();
@@ -380,7 +380,7 @@ contract("Meta Colony", accounts => {
     beforeEach(async () => {
       TOKEN_ARGS = getTokenArgs();
       token = await Token.new(...TOKEN_ARGS);
-      const { logs } = await colonyNetwork.createColony(token.address);
+      const { logs } = await colonyNetwork.createColony(token.address, 100);
       const { colonyAddress } = logs[0].args;
       await token.setOwner(colonyAddress);
       colony = await IColony.at(colonyAddress);

@@ -59,7 +59,7 @@ contract("Colony Funding", accounts => {
   beforeEach(async () => {
     const tokenArgs = getTokenArgs();
     token = await Token.new(...tokenArgs);
-    const { logs } = await colonyNetwork.createColony(token.address);
+    const { logs } = await colonyNetwork.createColony(token.address, 100);
     const { colonyAddress } = logs[0].args;
     await token.setOwner(colonyAddress);
     colony = await IColony.at(colonyAddress);
@@ -707,7 +707,7 @@ contract("Colony Funding", accounts => {
     it("should not be able to create reward payout if passed reputation is not from the correct colony", async () => {
       const tokenArgs = getTokenArgs();
       const newToken = await Token.new(...tokenArgs);
-      const { logs } = await colonyNetwork.createColony(newToken.address);
+      const { logs } = await colonyNetwork.createColony(newToken.address, 100);
       const { colonyAddress } = logs[0].args;
       const newColony = await IColony.at(colonyAddress);
 
@@ -816,7 +816,7 @@ contract("Colony Funding", accounts => {
     it("should not be able to claim reward if skill id is not from root domain", async () => {
       const tokenArgs = getTokenArgs();
       const newToken = await Token.new(...tokenArgs);
-      let { logs } = await colonyNetwork.createColony(newToken.address);
+      let { logs } = await colonyNetwork.createColony(newToken.address, 100);
       const { colonyAddress } = logs[0].args;
       const newColony = await IColony.at(colonyAddress);
 
@@ -881,7 +881,7 @@ contract("Colony Funding", accounts => {
     it("should not be able to start a reward payout if no one holds colony tokens", async () => {
       const tokenArgs = getTokenArgs();
       const newToken = await Token.new(...tokenArgs);
-      const { logs } = await colonyNetwork.createColony(newToken.address);
+      const { logs } = await colonyNetwork.createColony(newToken.address, 100);
       const { colonyAddress } = logs[0].args;
       const newColony = await IColony.at(colonyAddress);
 
@@ -949,7 +949,7 @@ contract("Colony Funding", accounts => {
     it("should not be able to claim payout if colony-wide reputation is 0", async () => {
       const tokenArgs = getTokenArgs();
       const newToken = await Token.new(...tokenArgs);
-      const { logs } = await colonyNetwork.createColony(newToken.address);
+      const { logs } = await colonyNetwork.createColony(newToken.address, 100);
       const { colonyAddress } = logs[0].args;
       const newColony = await IColony.at(colonyAddress);
       await newToken.mint(10);
@@ -1270,11 +1270,11 @@ contract("Colony Funding", accounts => {
       const tokenArgs = getTokenArgs();
       const newToken = await Token.new(...tokenArgs);
 
-      let { logs } = await colonyNetwork.createColony(newToken.address);
+      let { logs } = await colonyNetwork.createColony(newToken.address, 100);
       let { colonyAddress } = logs[0].args;
       const colony1 = await IColony.at(colonyAddress);
 
-      ({ logs } = await colonyNetwork.createColony(newToken.address));
+      ({ logs } = await colonyNetwork.createColony(newToken.address, 100));
       ({ colonyAddress } = logs[0].args);
       const colony2 = await IColony.at(colonyAddress);
 
@@ -1397,11 +1397,11 @@ contract("Colony Funding", accounts => {
       const tokenArgs = getTokenArgs();
       const newToken = await Token.new(...tokenArgs);
 
-      let { logs } = await colonyNetwork.createColony(newToken.address);
+      let { logs } = await colonyNetwork.createColony(newToken.address, 100);
       let { colonyAddress } = logs[0].args;
       const colony1 = await IColony.at(colonyAddress);
 
-      ({ logs } = await colonyNetwork.createColony(newToken.address));
+      ({ logs } = await colonyNetwork.createColony(newToken.address, 100));
       ({ colonyAddress } = logs[0].args);
       const colony2 = await IColony.at(colonyAddress);
 
@@ -1553,7 +1553,7 @@ contract("Colony Funding", accounts => {
         // Setting up a new token and colony
         const tokenArgs = getTokenArgs();
         const newToken = await Token.new(...tokenArgs);
-        let { logs } = await colonyNetwork.createColony(newToken.address);
+        let { logs } = await colonyNetwork.createColony(newToken.address, 100);
         const { colonyAddress } = logs[0].args;
         await newToken.setOwner(colonyAddress);
         const newColony = await IColony.at(colonyAddress);

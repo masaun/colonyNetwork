@@ -114,7 +114,7 @@ contract ColonyNetwork is ColonyNetworkStorage {
     return miningCycleResolver;
   }
 
-  function createMetaColony(address _tokenAddress) public stoppable
+  function createMetaColony(address _tokenAddress, uint256 _rewardInverse) stoppable public
   auth
   {
     require(metaColony == 0, "colony-meta-colony-exists-already");
@@ -125,13 +125,16 @@ contract ColonyNetwork is ColonyNetworkStorage {
     skills[skillCount] = rootGlobalSkill;
     rootGlobalSkillId = skillCount;
 
-    metaColony = createColony(_tokenAddress);
+    metaColony = createColony(_tokenAddress, _rewardInverse);
 
     // Add the special mining skill
     this.addSkill(skillCount, false);
   }
 
-  function createColony(address _tokenAddress) public stoppable returns (address) {
+  function createColony(address _tokenAddress, uint256 _rewardInverse) public
+  stoppable
+  returns (address) 
+  {
     EtherRouter etherRouter = new EtherRouter();
     address resolverForLatestColonyVersion = colonyVersionResolver[currentColonyVersion];
     etherRouter.setResolver(resolverForLatestColonyVersion);
@@ -157,7 +160,7 @@ contract ColonyNetwork is ColonyNetworkStorage {
     colonies[colonyCount] = colony;
     _isColony[colony] = true;
 
-    colony.initialiseColony(this);
+    colony.initialiseColony(this, _rewardInverse);
     emit ColonyAdded(colonyCount, etherRouter);
 
     return etherRouter;

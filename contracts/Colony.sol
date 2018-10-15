@@ -55,7 +55,7 @@ contract Colony is ColonyStorage, PatriciaTreeProofs {
     return token;
   }
 
-  function initialiseColony(address _address) public stoppable {
+  function initialiseColony(address _address, uint256 _rewardInverse) public stoppable {
     require(colonyNetworkAddress == 0x0, "colony-initialise-bad-address");
     colonyNetworkAddress = _address;
 
@@ -78,6 +78,9 @@ contract Colony is ColonyStorage, PatriciaTreeProofs {
     IColonyNetwork colonyNetwork = IColonyNetwork(colonyNetworkAddress);
     uint256 rootLocalSkill = colonyNetwork.getSkillCount();
     initialiseDomain(rootLocalSkill);
+
+    // Set initial colony reward inverse amount
+    rewardInverse = _rewardInverse;
   }
 
   function bootstrapColony(address[] _users, int[] _amounts) public

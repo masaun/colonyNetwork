@@ -48,7 +48,7 @@ contract("EtherRouter / Resolver", accounts => {
   describe("Resolver", () => {
     it("should return correct destination for given function", async () => {
       const deployedColonyNetwork = await ColonyNetwork.deployed();
-      const signature = await resolver.stringToSig("createColony(address)");
+      const signature = await resolver.stringToSig("createColony(address,uint256)");
       const destination = await resolver.lookup(signature);
       assert.equal(destination, deployedColonyNetwork.address);
     });

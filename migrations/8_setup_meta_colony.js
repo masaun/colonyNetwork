@@ -29,7 +29,7 @@ module.exports = deployer => {
     })
     // These commands add the first address as a reputation miner. This isn't necessary (or wanted!) for a real-world deployment,
     // but is useful when playing around with the network to get reputation mining going.
-    .then(() => colonyNetwork.createMetaColony(token.address))
+    .then(() => colonyNetwork.createMetaColony(token.address, 100))
     .then(() => colonyNetwork.getTokenLocking())
     .then(address => {
       tokenLocking = address;

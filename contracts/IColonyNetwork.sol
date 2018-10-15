@@ -147,15 +147,17 @@ contract IColonyNetwork is IRecovery {
 
   /// @notice Create the Meta Colony, same as a normal colony plus the root skill
   /// @param _tokenAddress Address of the CLNY token
-  function createMetaColony(address _tokenAddress) public;
+  /// @param _rewardInverse The colony reward inverse amount
+  function createMetaColony(address _tokenAddress, uint256 _rewardInverse) public;
 
   /// @notice Creates a new colony in the network
   /// Note that the token ownership (if there is one) has to be transferred to the newly created colony
   /// @param _tokenAddress Address of an ERC20 token to serve as the colony token
   /// Additionally token can optionally support `mint` as defined in `ERC20Extended`
   /// Support for `mint` in mandatory only for the Meta Colony Token
+  /// @param _rewardInverse The colony reward inverse amount
   /// @return colonyAddress Address of the newly created colony
-  function createColony(address _tokenAddress) public returns (address colonyAddress);
+  function createColony(address _tokenAddress, uint256 _rewardInverse) public returns (address colonyAddress);
 
   /// @notice Adds a new Colony contract version and the address of associated `_resolver` contract. Secured function to authorised members
   /// @param _version The new Colony contract version

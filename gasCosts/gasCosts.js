@@ -86,7 +86,7 @@ contract("All", accounts => {
     const tokenLockingAddress = await colonyNetwork.getTokenLocking();
     tokenLocking = await ITokenLocking.at(tokenLockingAddress);
 
-    const { logs } = await colonyNetwork.createColony(token.address);
+    const { logs } = await colonyNetwork.createColony(token.address, 100);
     const { colonyAddress } = logs[0].args;
     await token.setOwner(colonyAddress);
     colony = await IColony.at(colonyAddress);
@@ -105,7 +105,7 @@ contract("All", accounts => {
     it("when working with the Colony Network", async () => {
       const tokenArgs = getTokenArgs();
       const colonyToken = await Token.new(...tokenArgs);
-      await colonyNetwork.createColony(colonyToken.address);
+      await colonyNetwork.createColony(colonyToken.address, 100);
     });
 
     it("when working with the Meta Colony", async () => {
@@ -329,7 +329,7 @@ contract("All", accounts => {
 
       const tokenArgs = getTokenArgs();
       const newToken = await Token.new(...tokenArgs);
-      const { logs } = await colonyNetwork.createColony(newToken.address);
+      const { logs } = await colonyNetwork.createColony(newToken.address, 100);
       const { colonyAddress } = logs[0].args;
       const newColony = await IColony.at(colonyAddress);
       await newToken.setOwner(colonyAddress);

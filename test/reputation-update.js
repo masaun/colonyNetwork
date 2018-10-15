@@ -53,7 +53,7 @@ contract("Colony Reputation Updates", accounts => {
 
     const tokenArgs = getTokenArgs();
     colonyToken = await Token.new(...tokenArgs);
-    await colonyNetwork.createMetaColony(colonyToken.address);
+    await colonyNetwork.createMetaColony(colonyToken.address, 100);
     const metaColonyAddress = await colonyNetwork.getMetaColony();
     await colonyToken.setOwner(metaColonyAddress);
     metaColony = await IMetaColony.at(metaColonyAddress);

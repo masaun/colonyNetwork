@@ -39,7 +39,7 @@ contract("Colony contract upgrade", accounts => {
 
     const tokenArgs = getTokenArgs();
     const colonyToken = await Token.new(...tokenArgs);
-    const { logs } = await colonyNetwork.createColony(colonyToken.address);
+    const { logs } = await colonyNetwork.createColony(colonyToken.address, 100);
     const { colonyAddress } = logs[0].args;
     colony = await IColony.at(colonyAddress);
     colonyTask = await ColonyTask.new();

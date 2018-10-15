@@ -20,12 +20,12 @@ contract("ColonyNetwork contract upgrade", () => {
     // Setup 2 test colonies
     const tokenArgs1 = getTokenArgs();
     const newToken = await Token.new(...tokenArgs1);
-    let { logs } = await colonyNetwork.createColony(newToken.address);
+    let { logs } = await colonyNetwork.createColony(newToken.address, 100);
     colonyAddress1 = logs[0].args.colonyAddress;
 
     const tokenArgs2 = getTokenArgs();
     const newToken2 = await Token.new(...tokenArgs2);
-    ({ logs } = await colonyNetwork.createColony(newToken2.address));
+    ({ logs } = await colonyNetwork.createColony(newToken2.address, 100));
     colonyAddress2 = logs[0].args.colonyAddress;
 
     // Setup new Colony contract version on the Network

@@ -95,9 +95,9 @@ contract("Colony", accounts => {
       const owner = accounts[0];
       await colony.setRecoveryRole(owner);
       await colony.enterRecoveryMode();
-      await checkErrorRevert(colony.initialiseColony("0x0"), "colony-in-recovery-mode");
+      await checkErrorRevert(colony.initialiseColony("0x0", 100), "colony-in-recovery-mode");
       await checkErrorRevert(colony.mintTokens(1000), "colony-in-recovery-mode");
-      await checkErrorRevert(colony.addGlobalSkill(0), "colony-in-recovery-mode");
+      await checkErrorRevert(metaColony.addGlobalSkill(0), "colony-in-recovery-mode");
       await checkErrorRevert(colony.makeTask(SPECIFICATION_HASH, 0, 0, 0), "colony-in-recovery-mode");
     });
 

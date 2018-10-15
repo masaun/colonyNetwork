@@ -90,7 +90,7 @@ contract("ColonyNetwork", accounts => {
   describe("when creating new colonies", () => {
     it("should allow users to create new colonies", async () => {
       const token = await Token.new(...TOKEN_ARGS);
-      const { logs } = await colonyNetwork.createColony(token.address);
+      const { logs } = await colonyNetwork.createColony(token.address, 100);
       const { colonyAddress } = logs[0].args;
       const colonyCount = await colonyNetwork.getColonyCount();
       assert.notEqual(colonyAddress, 0x0);
@@ -99,20 +99,20 @@ contract("ColonyNetwork", accounts => {
 
     it("should maintain correct count of colonies", async () => {
       const token = await Token.new(...getTokenArgs());
-      await colonyNetwork.createColony(token.address);
-      await colonyNetwork.createColony(token.address);
-      await colonyNetwork.createColony(token.address);
-      await colonyNetwork.createColony(token.address);
-      await colonyNetwork.createColony(token.address);
-      await colonyNetwork.createColony(token.address);
-      await colonyNetwork.createColony(token.address);
+      await colonyNetwork.createColony(token.address, 100);
+      await colonyNetwork.createColony(token.address, 100);
+      await colonyNetwork.createColony(token.address, 100);
+      await colonyNetwork.createColony(token.address, 100);
+      await colonyNetwork.createColony(token.address, 100);
+      await colonyNetwork.createColony(token.address, 100);
+      await colonyNetwork.createColony(token.address, 100);
       const colonyCount = await colonyNetwork.getColonyCount();
       assert.equal(colonyCount.toNumber(), 7);
     });
 
     it("when meta colony is created, should have the root global and local skills initialised, plus the local mining skill", async () => {
       const token = await Token.new(...TOKEN_ARGS);
-      await colonyNetwork.createMetaColony(token.address);
+      await colonyNetwork.createMetaColony(token.address, 100);
       const skillCount = await colonyNetwork.getSkillCount();
       assert.equal(skillCount.toNumber(), 3);
       const rootGlobalSkill = await colonyNetwork.getSkill(1);
@@ -134,17 +134,17 @@ contract("ColonyNetwork", accounts => {
 
     it("should fail to create meta colony if it already exists", async () => {
       const token = await Token.new(...TOKEN_ARGS);
-      await colonyNetwork.createMetaColony(token.address);
+      await colonyNetwork.createMetaColony(token.address, 100);
       const metaColonyAddress1 = await colonyNetwork.getMetaColony();
 
-      await checkErrorRevert(colonyNetwork.createMetaColony(token.address), "colony-meta-colony-exists-already");
+      await checkErrorRevert(colonyNetwork.createMetaColony(token.address, 100), "colony-meta-colony-exists-already");
       const metaColonyAddress2 = await colonyNetwork.getMetaColony();
       assert.equal(metaColonyAddress1, metaColonyAddress2);
     });
 
     it("when any colony is created, should have the root local skill initialised", async () => {
       const token = await Token.new(...TOKEN_ARGS);
-      const { logs } = await colonyNetwork.createColony(token.address);
+      const { logs } = await colonyNetwork.createColony(token.address, 100);
       const rootLocalSkill = await colonyNetwork.getSkill(1);
       assert.equal(rootLocalSkill[0].toNumber(), 0);
       assert.equal(rootLocalSkill[1].toNumber(), 0);
@@ -164,7 +164,7 @@ contract("ColonyNetwork", accounts => {
 
     it("should fail if ETH is sent", async () => {
       const token = await Token.new(...TOKEN_ARGS);
-      await checkErrorRevert(colonyNetwork.createColony(token.address, { value: 1, gas: createColonyGas }));
+      await checkErrorRevert(colonyNetwork.createColony(token.address, 100, { value: 1, gas: createColonyGas }));
 
       const colonyNetworkBalance = await web3GetBalance(colonyNetwork.address);
       assert.equal(0, colonyNetworkBalance);
@@ -172,16 +172,16 @@ contract("ColonyNetwork", accounts => {
 
     it("should log a ColonyAdded event", async () => {
       const token = await Token.new(...TOKEN_ARGS);
-      await expectEvent(colonyNetwork.createColony(token.address), "ColonyAdded");
+      await expectEvent(colonyNetwork.createColony(token.address, 100), "ColonyAdded");
     });
   });
 
   describe("when getting existing colonies", () => {
     it("should allow users to get the address of a colony by its index", async () => {
       const token = await Token.new(...TOKEN_ARGS);
-      await colonyNetwork.createColony(token.address);
-      await colonyNetwork.createColony(token.address);
-      await colonyNetwork.createColony(token.address);
+      await colonyNetwork.createColony(token.address, 100);
+      await colonyNetwork.createColony(token.address, 100);
+      await colonyNetwork.createColony(token.address, 100);
       const colonyAddress = await colonyNetwork.getColony(3);
       assert.notEqual(colonyAddress, "0x0000000000000000000000000000000000000000");
     });
@@ -193,7 +193,7 @@ contract("ColonyNetwork", accounts => {
 
     it("should be able to get the Colony version", async () => {
       const token = await Token.new(...TOKEN_ARGS);
-      const { logs } = await colonyNetwork.createColony(token.address);
+      const { logs } = await colonyNetwork.createColony(token.address, 100);
       const { colonyAddress } = logs[0].args;
       const colony = await Colony.at(colonyAddress);
       const actualColonyVersion = await colony.version();
@@ -204,7 +204,7 @@ contract("ColonyNetwork", accounts => {
   describe("when upgrading a colony", () => {
     it("should be able to upgrade a colony, if a sender has owner role", async () => {
       const token = await Token.new(...TOKEN_ARGS);
-      const { logs } = await colonyNetwork.createColony(token.address);
+      const { logs } = await colonyNetwork.createColony(token.address, 100);
       const { colonyAddress } = logs[0].args;
       const colonyEtherRouter = await EtherRouter.at(colonyAddress);
       const colony = await Colony.at(colonyAddress);
@@ -221,7 +221,7 @@ contract("ColonyNetwork", accounts => {
 
     it("should not be able to set colony resolver by directly calling `setResolver`", async () => {
       const token = await Token.new(...TOKEN_ARGS);
-      const { logs } = await colonyNetwork.createColony(token.address);
+      const { logs } = await colonyNetwork.createColony(token.address, 100);
       const { colonyAddress } = logs[0].args;
       const colony = await EtherRouter.at(colonyAddress);
 
@@ -234,7 +234,7 @@ contract("ColonyNetwork", accounts => {
 
     it("should NOT be able to upgrade a colony to a lower version", async () => {
       const token = await Token.new(...TOKEN_ARGS);
-      const { logs } = await colonyNetwork.createColony(token.address);
+      const { logs } = await colonyNetwork.createColony(token.address, 100);
       const { colonyAddress } = logs[0].args;
       const colony = await Colony.at(colonyAddress);
 
@@ -249,7 +249,7 @@ contract("ColonyNetwork", accounts => {
 
     it("should NOT be able to upgrade a colony to a nonexistent version", async () => {
       const token = await Token.new(...TOKEN_ARGS);
-      const { logs } = await colonyNetwork.createColony(token.address);
+      const { logs } = await colonyNetwork.createColony(token.address, 100);
       const { colonyAddress } = logs[0].args;
       const currentColonyVersion = await colonyNetwork.getCurrentColonyVersion();
       const newVersion = currentColonyVersion.addn(1).toNumber();
@@ -261,7 +261,7 @@ contract("ColonyNetwork", accounts => {
 
     it("should NOT be able to upgrade a colony if sender don't have owner role", async () => {
       const token = await Token.new(...TOKEN_ARGS);
-      const { logs } = await colonyNetwork.createColony(token.address);
+      const { logs } = await colonyNetwork.createColony(token.address, 100);
       const { colonyAddress } = logs[0].args;
       const colonyEtherRouter = await EtherRouter.at(colonyAddress);
       const colonyResolver = await colonyEtherRouter.resolver();
@@ -280,7 +280,7 @@ contract("ColonyNetwork", accounts => {
   describe("when adding a skill", () => {
     beforeEach(async () => {
       const token = await Token.new(...TOKEN_ARGS);
-      const { logs } = await colonyNetwork.createColony(token.address);
+      const { logs } = await colonyNetwork.createColony(token.address, 100);
       const { colonyAddress } = logs[0].args;
       await token.setOwner(colonyAddress);
     });
@@ -366,7 +366,7 @@ contract("ColonyNetwork", accounts => {
 
       // Cargo-cult colony generation
       const token = await Token.new(...TOKEN_ARGS);
-      const { logs } = await colonyNetwork.createColony(token.address);
+      const { logs } = await colonyNetwork.createColony(token.address, 100);
       const { colonyAddress } = logs[0].args;
       const colony = await Colony.at(colonyAddress);
 
@@ -403,7 +403,7 @@ contract("ColonyNetwork", accounts => {
 
       // Set up colony
       const token = await Token.new(...TOKEN_ARGS);
-      const { logs } = await colonyNetwork.createColony(token.address);
+      const { logs } = await colonyNetwork.createColony(token.address, 100);
       const { colonyAddress } = logs[0].args;
       const colony = await Colony.at(colonyAddress);
       // Register colony

@@ -44,7 +44,7 @@ contract("TokenLocking", addresses => {
     tokenArgs = getTokenArgs();
     otherToken = await Token.new(...tokenArgs);
 
-    const { logs } = await colonyNetwork.createColony(token.address);
+    const { logs } = await colonyNetwork.createColony(token.address, 100);
     const { colonyAddress } = logs[0].args;
     colony = await IColony.at(colonyAddress);
     await token.setOwner(colony.address);

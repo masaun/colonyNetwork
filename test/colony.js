@@ -92,7 +92,7 @@ contract("Colony", accounts => {
     await setupColonyVersionResolver(colonyTemplate, colonyTask, colonyFunding, contractRecovery, resolver, colonyNetwork);
 
     const clnyToken = await Token.new("Colony Network Token", "CLNY", 18);
-    await colonyNetwork.createMetaColony(clnyToken.address);
+    await colonyNetwork.createMetaColony(clnyToken.address, 100);
     const metaColonyAddress = await colonyNetwork.getMetaColony();
     metaColony = await IMetaColony.at(metaColonyAddress);
     await metaColony.setNetworkFeeInverse(100);
@@ -108,7 +108,7 @@ contract("Colony", accounts => {
   beforeEach(async () => {
     const tokenArgs = getTokenArgs();
     token = await Token.new(...tokenArgs);
-    const { logs } = await colonyNetwork.createColony(token.address);
+    const { logs } = await colonyNetwork.createColony(token.address, 100);
     const { colonyAddress } = logs[0].args;
     await token.setOwner(colonyAddress);
     colony = await IColony.at(colonyAddress);
@@ -145,7 +145,7 @@ contract("Colony", accounts => {
     });
 
     it("should not allow reinitialisation", async () => {
-      await checkErrorRevert(colony.initialiseColony(0x0), "colony-initialise-bad-address");
+      await checkErrorRevert(colony.initialiseColony(0x0, 100), "colony-initialise-bad-address");
     });
 
     it("should correctly generate a rating secret", async () => {
@@ -1825,6 +1825,24 @@ contract("Colony", accounts => {
       await colony.finalizeTask(taskId);
 
       await checkErrorRevert(colony.claimPayout(taskId, MANAGER_ROLE, token.address, { from: OTHER }), "colony-claim-payout-access-denied");
+    });
+  });
+
+  describe("when setting the reward inverse", () => {
+    it("should allow the colony owner to set it", async () => {
+      await colony.setRewardInverse(234);
+      const fee = await colony.getRewardInverse();
+      assert.equal(fee, 234);
+    });
+
+    it("should not allow anyone else but the colony owner to set it", async () => {
+      await checkErrorRevert(colony.setRewardInverse(234, { from: accounts[1] }));
+      const fee = await colony.getRewardInverse();
+      assert.equal(fee, 100);
+    });
+
+    it("should now allow the amount to be set to zero", async () => {
+      await checkErrorRevert(colony.setRewardInverse(0), "colony-reward-inverse-cannot-be-zero");
     });
   });
 });
