@@ -114,7 +114,8 @@ contract ColonyNetwork is ColonyNetworkStorage {
     return miningCycleResolver;
   }
 
-  function createMetaColony(address _tokenAddress, uint256 _rewardInverse) stoppable public
+  function createMetaColony(address _tokenAddress, uint256 _rewardInverse) public
+  stoppable
   auth
   {
     require(metaColony == 0, "colony-meta-colony-exists-already");
@@ -267,7 +268,7 @@ contract ColonyNetwork is ColonyNetworkStorage {
     return feeInverse;
   }
 
-  function setFeeInverse(uint256 _feeInverse) public 
+  function setFeeInverse(uint256 _feeInverse) public stoppable
   calledByMetaColony
   {
     require(_feeInverse > 0, "colony-network-fee-inverse-cannot-be-zero");
