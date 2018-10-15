@@ -1856,7 +1856,7 @@ contract("Colony", accounts => {
       const networkBalance3 = await token.balanceOf(colonyNetwork.address);
       const workerBalanceAfter = await token.balanceOf(WORKER);
       expect(networkBalance3.sub(networkBalance2)).to.eq.BN(1);
-      expect(workerBalanceAfter.sub(workerBalanceBefore)).to.be.zero; // eslint-disable-line no-unused-expressions
+      expect(workerBalanceAfter.sub(workerBalanceBefore)).to.be.zero;
     });
   });
 
