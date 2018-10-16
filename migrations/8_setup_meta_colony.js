@@ -6,7 +6,7 @@ const assert = require("assert");
 const IColonyNetwork = artifacts.require("./IColonyNetwork");
 const ITokenLocking = artifacts.require("./ITokenLocking");
 const EtherRouter = artifacts.require("./EtherRouter");
-const Token = artifacts.require("./Token");
+const ColonyToken = artifacts.require("../lib/colonyToken/contracts/Token");
 
 module.exports = deployer => {
   // Create the meta colony
@@ -18,7 +18,7 @@ module.exports = deployer => {
     .then(_etherRouter => IColonyNetwork.at(_etherRouter.address))
     .then(instance => {
       colonyNetwork = instance;
-      return Token.new("Colony Network Token", "CLNY", 18);
+      return ColonyToken.new("Colony Network Token", "CLNY", 18);
     })
     .then(tokenInstance => {
       token = tokenInstance;
