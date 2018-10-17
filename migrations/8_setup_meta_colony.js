@@ -3,17 +3,19 @@
 
 const assert = require("assert");
 
-const Token = artifacts.require("../lib/colonyToken/contracts/Token");
+const Token = artifacts.require("./Token");
 const IColonyNetwork = artifacts.require("./IColonyNetwork");
 const ITokenLocking = artifacts.require("./ITokenLocking");
 const EtherRouter = artifacts.require("./EtherRouter");
-const TokenAuthority = artifacts.require("../lib/colonyToken/contracts/TokenAuthority");
+const TokenAuthority = artifacts.require("./TokenAuthority");
 
 module.exports = deployer => {
   // Create the meta colony
   let colonyNetwork;
-  let tokenLocking;
+  let tokenLockingAddress;
   let clnyToken;
+  let metaColonyAddress;
+
   deployer
     .then(() => EtherRouter.deployed())
     .then(_etherRouter => IColonyNetwork.at(_etherRouter.address))
@@ -23,30 +25,29 @@ module.exports = deployer => {
     })
     .then(tokenInstance => {
       clnyToken = tokenInstance;
-      return clnyToken.mint(10000000000000000);
-    })
-    .then(() => TokenAuthority.new(clnyToken.address, 0x0))
-    .then(tokenAuthority => {
-      clnyToken.setAuthority(tokenAuthority.address);
+      return colonyNetwork.createMetaColony(clnyToken.address);
     })
     // These commands add the first address as a reputation miner. This isn't necessary (or wanted!) for a real-world deployment,
     // but is useful when playing around with the network to get reputation mining going.
-    .then(() => colonyNetwork.createMetaColony(clnyToken.address))
-    .then(() => colonyNetwork.getTokenLocking())
-    .then(address => {
-      tokenLocking = address;
-      return clnyToken.approve(tokenLocking, "10000000000000000");
+    .then(() => colonyNetwork.getMetaColony())
+    .then(_metaColonyAddress => {
+      metaColonyAddress = _metaColonyAddress;
+      return colonyNetwork.getTokenLocking();
     })
-    .then(() => ITokenLocking.at(tokenLocking))
+    .then(address => {
+      tokenLockingAddress = address;
+      return TokenAuthority.new(clnyToken.address, 0x0, metaColonyAddress, tokenLockingAddress);
+    })
+    .then(tokenAuthority => clnyToken.setAuthority(tokenAuthority.address))
+    .then(() => clnyToken.mint(10000000000000000))
+    .then(() => clnyToken.approve(tokenLockingAddress, "10000000000000000"))
+    .then(() => ITokenLocking.at(tokenLockingAddress))
     .then(iTokenLocking => iTokenLocking.deposit(clnyToken.address, "10000000000000000"))
     .then(() => colonyNetwork.initialiseReputationMining())
     .then(() => colonyNetwork.startNextCycle())
     .then(() => colonyNetwork.getSkillCount())
-    .then(skillCount => {
+    .then(async skillCount => {
       assert.equal(skillCount.toNumber(), 3);
-      return colonyNetwork.getMetaColony();
-    })
-    .then(async metaColonyAddress => {
       // Doing an async / await here because we need this promise to resolve (i.e. tx to mine) and we also want
       // to log the address. It's either do this, or do `return colonyNetwork.getMetaColony()` twice. I'm easy on
       // which we use.
