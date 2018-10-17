@@ -22,7 +22,7 @@ const EtherRouter = artifacts.require("EtherRouter");
 const IColonyNetwork = artifacts.require("IColonyNetwork");
 const IReputationMiningCycle = artifacts.require("IReputationMiningCycle");
 const IColony = artifacts.require("IColony");
-const Token = artifacts.require("Token");
+const ERC20ExtendedToken = artifacts.require("ERC20ExtendedToken");
 const ReputationMiningCycle = artifacts.require("ReputationMiningCycle");
 const ReputationMiningCycleRespond = artifacts.require("ReputationMiningCycleRespond");
 const Resolver = artifacts.require("Resolver");
@@ -238,7 +238,7 @@ contract("Colony Network Recovery", accounts => {
           await newMiningClient.initialise(colonyNetwork.address);
 
           const tokenArgs = getTokenArgs();
-          const token = await Token.new(...tokenArgs);
+          const token = await ERC20ExtendedToken.new(...tokenArgs);
           const { logs } = await colonyNetwork.createColony(token.address);
           const { colonyAddress } = logs[0].args;
 
@@ -329,7 +329,7 @@ contract("Colony Network Recovery", accounts => {
           await ignorantMiningClient.initialise(colonyNetwork.address);
 
           const tokenArgs = getTokenArgs();
-          const token = await Token.new(...tokenArgs);
+          const token = await ERC20ExtendedToken.new(...tokenArgs);
           const { logs } = await colonyNetwork.createColony(token.address);
           const { colonyAddress } = logs[0].args;
 

@@ -19,7 +19,7 @@ import { createSignatures, createSignaturesTrezor, web3GetAccounts } from "./tes
 
 const IColony = artifacts.require("IColony");
 const ITokenLocking = artifacts.require("ITokenLocking");
-const Token = artifacts.require("Token");
+const ColonyToken = artifacts.require("ColonyToken");
 
 export async function makeTask({ colony, hash = SPECIFICATION_HASH, domainId = 1, skillId = 0, dueDate = 0 }) {
   const { logs } = await colony.makeTask(hash, domainId, skillId, dueDate);
@@ -250,7 +250,7 @@ export async function giveUserCLNYTokens(colonyNetwork, address, _amount) {
   const metaColonyAddress = await colonyNetwork.getMetaColony();
   const metaColony = await IColony.at(metaColonyAddress);
   const clnyAddress = await metaColony.getToken();
-  const clny = await Token.at(clnyAddress);
+  const clny = await ColonyToken.at(clnyAddress);
   const amount = new BN(_amount);
   const mainStartingBalance = await clny.balanceOf(manager);
   const targetStartingBalance = await clny.balanceOf(address);
@@ -288,7 +288,7 @@ export async function giveUserCLNYTokensAndStake(colonyNetwork, address, _amount
   const metaColonyAddress = await colonyNetwork.getMetaColony();
   const metaColony = await IColony.at(metaColonyAddress);
   const clnyAddress = await metaColony.getToken();
-  const clny = await Token.at(clnyAddress);
+  const clny = await ColonyToken.at(clnyAddress);
 
   await giveUserCLNYTokens(colonyNetwork, address, _amount);
   const tokenLockingAddress = await colonyNetwork.getTokenLocking();

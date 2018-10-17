@@ -57,7 +57,7 @@ const Resolver = artifacts.require("Resolver");
 const EtherRouter = artifacts.require("EtherRouter");
 const IColony = artifacts.require("IColony");
 const IColonyNetwork = artifacts.require("IColonyNetwork");
-const Token = artifacts.require("Token");
+const ERC20ExtendedToken = artifacts.require("ERC20ExtendedToken");
 const ColonyAuthority = artifacts.require("ColonyAuthority");
 const ColonyFunding = artifacts.require("ColonyFunding");
 const ColonyTask = artifacts.require("ColonyTask");
@@ -104,7 +104,7 @@ contract("Colony", accounts => {
 
   beforeEach(async () => {
     const tokenArgs = getTokenArgs();
-    token = await Token.new(...tokenArgs);
+    token = await ERC20ExtendedToken.new(...tokenArgs);
     const { logs } = await colonyNetwork.createColony(token.address);
     const { colonyAddress } = logs[0].args;
     await token.setOwner(colonyAddress);
@@ -112,7 +112,7 @@ contract("Colony", accounts => {
     const authorityAddress = await colony.authority();
     authority = await ColonyAuthority.at(authorityAddress);
     const otherTokenArgs = getTokenArgs();
-    otherToken = await Token.new(...otherTokenArgs);
+    otherToken = await ERC20ExtendedToken.new(...otherTokenArgs);
   });
 
   describe("when initialised", () => {

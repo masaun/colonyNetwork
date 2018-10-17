@@ -25,7 +25,7 @@ chai.use(bnChai(web3.utils.BN));
 const EtherRouter = artifacts.require("EtherRouter");
 const IColony = artifacts.require("IColony");
 const IColonyNetwork = artifacts.require("IColonyNetwork");
-const Token = artifacts.require("Token");
+const ERC20ExtendedToken = artifacts.require("ERC20ExtendedToken");
 const ITokenLocking = artifacts.require("ITokenLocking");
 const DSRoles = artifacts.require("DSRoles");
 const IReputationMiningCycle = artifacts.require("IReputationMiningCycle");
@@ -57,13 +57,13 @@ contract("Colony Funding", accounts => {
 
   beforeEach(async () => {
     const tokenArgs = getTokenArgs();
-    token = await Token.new(...tokenArgs);
+    token = await ERC20ExtendedToken.new(...tokenArgs);
     const { logs } = await colonyNetwork.createColony(token.address);
     const { colonyAddress } = logs[0].args;
     await token.setOwner(colonyAddress);
     colony = await IColony.at(colonyAddress);
     const otherTokenArgs = getTokenArgs();
-    otherToken = await Token.new(...otherTokenArgs);
+    otherToken = await ERC20ExtendedToken.new(...otherTokenArgs);
   });
 
   describe("when receiving tokens", () => {
@@ -705,7 +705,7 @@ contract("Colony Funding", accounts => {
 
     it("should not be able to create reward payout if passed reputation is not from the correct colony", async () => {
       const tokenArgs = getTokenArgs();
-      const newToken = await Token.new(...tokenArgs);
+      const newToken = await ERC20ExtendedToken.new(...tokenArgs);
       const { logs } = await colonyNetwork.createColony(newToken.address);
       const { colonyAddress } = logs[0].args;
       const newColony = await IColony.at(colonyAddress);
@@ -814,7 +814,7 @@ contract("Colony Funding", accounts => {
 
     it("should not be able to claim reward if skill id is not from root domain", async () => {
       const tokenArgs = getTokenArgs();
-      const newToken = await Token.new(...tokenArgs);
+      const newToken = await ERC20ExtendedToken.new(...tokenArgs);
       let { logs } = await colonyNetwork.createColony(newToken.address);
       const { colonyAddress } = logs[0].args;
       const newColony = await IColony.at(colonyAddress);
@@ -879,7 +879,7 @@ contract("Colony Funding", accounts => {
 
     it("should not be able to start a reward payout if no one holds colony tokens", async () => {
       const tokenArgs = getTokenArgs();
-      const newToken = await Token.new(...tokenArgs);
+      const newToken = await ERC20ExtendedToken.new(...tokenArgs);
       const { logs } = await colonyNetwork.createColony(newToken.address);
       const { colonyAddress } = logs[0].args;
       const newColony = await IColony.at(colonyAddress);
@@ -927,7 +927,7 @@ contract("Colony Funding", accounts => {
 
     it("should be able to collect rewards from multiple payouts of different token", async () => {
       const tokenArgs = getTokenArgs();
-      const newToken = await Token.new(...tokenArgs);
+      const newToken = await ERC20ExtendedToken.new(...tokenArgs);
       await fundColonyWithTokens(colony, newToken, initialFunding.toString());
 
       const tx1 = await colony.startNextRewardPayout(newToken.address, ...colonyWideReputationProof);
@@ -947,7 +947,7 @@ contract("Colony Funding", accounts => {
 
     it("should not be able to claim payout if colony-wide reputation is 0", async () => {
       const tokenArgs = getTokenArgs();
-      const newToken = await Token.new(...tokenArgs);
+      const newToken = await ERC20ExtendedToken.new(...tokenArgs);
       const { logs } = await colonyNetwork.createColony(newToken.address);
       const { colonyAddress } = logs[0].args;
       const newColony = await IColony.at(colonyAddress);
@@ -1161,7 +1161,7 @@ contract("Colony Funding", accounts => {
 
     it("should not be able to claim funds if previous payout is not claimed", async () => {
       const tokenArgs = getTokenArgs();
-      const newToken = await Token.new(...tokenArgs);
+      const newToken = await ERC20ExtendedToken.new(...tokenArgs);
       await fundColonyWithTokens(colony, newToken, initialFunding.toString());
 
       await colony.startNextRewardPayout(otherToken.address, ...colonyWideReputationProof);
@@ -1267,7 +1267,7 @@ contract("Colony Funding", accounts => {
     it("should be able to collect payout from two colonies at the same time", async () => {
       // Setting up a new token and two colonies
       const tokenArgs = getTokenArgs();
-      const newToken = await Token.new(...tokenArgs);
+      const newToken = await ERC20ExtendedToken.new(...tokenArgs);
 
       let { logs } = await colonyNetwork.createColony(newToken.address);
       let { colonyAddress } = logs[0].args;
@@ -1394,7 +1394,7 @@ contract("Colony Funding", accounts => {
     it("should not be able to claim reward payout from a colony that didn't created it", async () => {
       // Setting up a new token and two colonies
       const tokenArgs = getTokenArgs();
-      const newToken = await Token.new(...tokenArgs);
+      const newToken = await ERC20ExtendedToken.new(...tokenArgs);
 
       let { logs } = await colonyNetwork.createColony(newToken.address);
       let { colonyAddress } = logs[0].args;
@@ -1551,14 +1551,14 @@ contract("Colony Funding", accounts => {
         total reputation/tokens: ${data.totalReputation.toString()}`, async () => {
         // Setting up a new token and colony
         const tokenArgs = getTokenArgs();
-        const newToken = await Token.new(...tokenArgs);
+        const newToken = await ERC20ExtendedToken.new(...tokenArgs);
         let { logs } = await colonyNetwork.createColony(newToken.address);
         const { colonyAddress } = logs[0].args;
         await newToken.setOwner(colonyAddress);
         const newColony = await IColony.at(colonyAddress);
 
         const payoutTokenArgs = getTokenArgs();
-        const payoutToken = await Token.new(...payoutTokenArgs);
+        const payoutToken = await ERC20ExtendedToken.new(...payoutTokenArgs);
         await fundColonyWithTokens(newColony, payoutToken, data.totalAmountOfPayoutTokens.toString());
         // Issuing colony's native tokens so they can be given to users in `bootstrapColony`
         await newColony.mintTokens(data.totalReputation.toString());

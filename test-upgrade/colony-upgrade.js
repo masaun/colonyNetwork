@@ -13,7 +13,7 @@ const ColonyFunding = artifacts.require("ColonyFunding");
 const UpdatedColony = artifacts.require("UpdatedColony");
 const IUpdatedColony = artifacts.require("IUpdatedColony");
 const ColonyAuthority = artifacts.require("ColonyAuthority");
-const Token = artifacts.require("Token");
+const ERC20ExtendedToken = artifacts.require("ERC20ExtendedToken");
 const ContractRecovery = artifacts.require("ContractRecovery");
 
 contract("Colony contract upgrade", accounts => {
@@ -38,7 +38,7 @@ contract("Colony contract upgrade", accounts => {
     dueDate = await currentBlockTime();
 
     const tokenArgs = getTokenArgs();
-    const colonyToken = await Token.new(...tokenArgs);
+    const colonyToken = await ERC20ExtendedToken.new(...tokenArgs);
     const { logs } = await colonyNetwork.createColony(colonyToken.address);
     const { colonyAddress } = logs[0].args;
     colony = await IColony.at(colonyAddress);
@@ -48,7 +48,7 @@ contract("Colony contract upgrade", accounts => {
     const authorityAddress = await colony.authority();
     authority = await ColonyAuthority.at(authorityAddress);
     const tokenAddress = await colony.getToken();
-    token = await Token.at(tokenAddress);
+    token = await ERC20ExtendedToken.at(tokenAddress);
 
     await makeTask({ colony, dueDate });
     await makeTask({ colony, dueDate: dueDate + 1, hash: SPECIFICATION_HASH_UPDATED });

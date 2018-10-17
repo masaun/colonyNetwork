@@ -30,7 +30,7 @@ const EtherRouter = artifacts.require("EtherRouter");
 const IColony = artifacts.require("IColony");
 const IColonyNetwork = artifacts.require("IColonyNetwork");
 const ITokenLocking = artifacts.require("ITokenLocking");
-const Token = artifacts.require("Token");
+const ColonyToken = artifacts.require("ColonyToken");
 const IReputationMiningCycle = artifacts.require("IReputationMiningCycle");
 
 const contractLoader = new TruffleLoader({
@@ -60,7 +60,7 @@ contract("ColonyNetworkMining", accounts => {
     const metaColonyAddress = await colonyNetwork.getMetaColony();
     metaColony = await IColony.at(metaColonyAddress);
     const clnyAddress = await metaColony.getToken();
-    clny = await Token.at(clnyAddress);
+    clny = await ColonyToken.at(clnyAddress);
   });
 
   beforeEach(async () => {

@@ -13,7 +13,7 @@ const EtherRouter = artifacts.require("EtherRouter");
 const IColony = artifacts.require("IColony");
 const IColonyNetwork = artifacts.require("IColonyNetwork");
 const DutchAuction = artifacts.require("DutchAuction");
-const Token = artifacts.require("Token");
+const ERC20ExtendedToken = artifacts.require("ERC20ExtendedToken");
 const ColonyToken = artifacts.require("../lib/colonyToken/contracts/Token");
 
 contract("ColonyNetworkAuction", accounts => {
@@ -46,7 +46,7 @@ contract("ColonyNetworkAuction", accounts => {
     await clny.setOwner(metaColony.address);
 
     const args = getTokenArgs();
-    token = await Token.new(...args);
+    token = await ERC20ExtendedToken.new(...args);
     await token.mint(quantity.toString());
     await token.transfer(colonyNetwork.address, quantity.toString());
     const { logs, receipt } = await colonyNetwork.startTokenAuction(token.address);
@@ -73,7 +73,7 @@ contract("ColonyNetworkAuction", accounts => {
 
     it("should fail with zero quantity", async () => {
       const args = getTokenArgs();
-      const otherToken = await Token.new(...args);
+      const otherToken = await ERC20ExtendedToken.new(...args);
       await checkErrorRevert(colonyNetwork.startTokenAuction(otherToken.address));
     });
   });
@@ -89,7 +89,7 @@ contract("ColonyNetworkAuction", accounts => {
 
     it("should set the minimum price correctly for quantity < 1e18", async () => {
       const args = getTokenArgs();
-      const otherToken = await Token.new(...args);
+      const otherToken = await ERC20ExtendedToken.new(...args);
       await otherToken.mint(1e17);
       await otherToken.transfer(colonyNetwork.address, 1e17);
       const { logs } = await colonyNetwork.startTokenAuction(otherToken.address);
