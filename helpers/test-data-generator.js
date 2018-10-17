@@ -19,7 +19,7 @@ import { createSignatures, createSignaturesTrezor, web3GetAccounts } from "./tes
 
 const IColony = artifacts.require("IColony");
 const ITokenLocking = artifacts.require("ITokenLocking");
-const Token = artifacts.require("../lib/colonyToken/contracts/Token");
+const Token = artifacts.require("Token");
 
 export async function makeTask({ colony, hash = SPECIFICATION_HASH, domainId = 1, skillId = 0, dueDate = 0 }) {
   const { logs } = await colony.makeTask(hash, domainId, skillId, dueDate);

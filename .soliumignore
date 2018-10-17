@@ -3,5 +3,7 @@ helpers
 migrations
 test
 contracts/Migrations.sol
+contracts/Token.sol
+contracts/TokenAuthority.sol
 contracts/gnosis/MultiSigWallet.sol
 lib
