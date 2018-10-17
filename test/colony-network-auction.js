@@ -4,7 +4,7 @@ import chai from "chai";
 import bnChai from "bn-chai";
 
 import { getTokenArgs, web3GetTransactionReceipt, web3GetCode, checkErrorRevert, forwardTime, getBlockTime } from "../helpers/test-helper";
-import { giveUserCLNYTokens } from "../helpers/test-data-generator";
+import { giveUserCLNYTokens, setupMetaColonyWithLockedCLNYToken } from "../helpers/test-data-generator";
 
 const { expect } = chai;
 chai.use(bnChai(web3.utils.BN));
@@ -15,9 +15,8 @@ const IColonyNetwork = artifacts.require("IColonyNetwork");
 const DutchAuction = artifacts.require("DutchAuction");
 const ERC20ExtendedToken = artifacts.require("ERC20ExtendedToken");
 const Token = artifacts.require("Token");
-const TokenAuthority = artifacts.require("TokenAuthority");
 
-contract("ColonyNetworkAuction", accounts => {
+contract("Colony Network Auction", accounts => {
   const BIDDER_1 = accounts[1];
   const BIDDER_2 = accounts[2];
   const BIDDER_3 = accounts[3];
@@ -36,17 +35,12 @@ contract("ColonyNetworkAuction", accounts => {
     clnyNeededForMaxPriceAuctionSellout = new BN(10).pow(new BN(54)).muln(3);
     const etherRouter = await EtherRouter.deployed();
     colonyNetwork = await IColonyNetwork.at(etherRouter.address);
-
-    const metaColonyAddress = await colonyNetwork.getMetaColony();
-    metaColony = await IColony.at(metaColonyAddress);
   });
 
   beforeEach(async () => {
-    clnyToken = await Token.new("Colony Network Token", "CLNY", 18);
-    const tokenAuthority = await TokenAuthority.new(token.address, 0x0, metaColony.address, 0x0);
-    await clnyToken.setAuthority(tokenAuthority.address);
-    await metaColony.setToken(clnyToken.address);
-    await clnyToken.setOwner(metaColony.address);
+    const { metaColonyAddress, clnyTokenAddress } = await setupMetaColonyWithLockedCLNYToken(colonyNetwork);
+    metaColony = await IColony.at(metaColonyAddress);
+    clnyToken = await Token.at(clnyTokenAddress);
 
     const args = getTokenArgs();
     token = await ERC20ExtendedToken.new(...args);

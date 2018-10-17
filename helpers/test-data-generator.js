@@ -20,6 +20,7 @@ import { createSignatures, createSignaturesTrezor, web3GetAccounts } from "./tes
 const IColony = artifacts.require("IColony");
 const ITokenLocking = artifacts.require("ITokenLocking");
 const Token = artifacts.require("Token");
+const TokenAuthority = artifacts.require("./TokenAuthority");
 
 export async function makeTask({ colony, hash = SPECIFICATION_HASH, domainId = 1, skillId = 0, dueDate = 0 }) {
   const { logs } = await colony.makeTask(hash, domainId, skillId, dueDate);
@@ -275,8 +276,10 @@ export async function giveUserCLNYTokens(colonyNetwork, address, _amount) {
       .sub(mainStartingBalance)
       .toString()
   );
+
   await clny.transfer(address, amount.toString());
   mainBalance = await clny.balanceOf(manager);
+
   if (address !== manager) {
     await clny.transfer(0x0, mainBalance.sub(mainStartingBalance).toString());
   }
@@ -289,7 +292,6 @@ export async function giveUserCLNYTokensAndStake(colonyNetwork, address, _amount
   const metaColony = await IColony.at(metaColonyAddress);
   const clnyAddress = await metaColony.getToken();
   const clny = await Token.at(clnyAddress);
-
   await giveUserCLNYTokens(colonyNetwork, address, _amount);
   const tokenLockingAddress = await colonyNetwork.getTokenLocking();
   const tokenLocking = await ITokenLocking.at(tokenLockingAddress);
@@ -306,4 +308,25 @@ export async function fundColonyWithTokens(colony, token, tokenAmount) {
     await token.transfer(colony.address, tokenAmount);
   }
   await colony.claimColonyFunds(token.address);
+}
+
+export async function setupMetaColonyWithLockedCLNYToken(colonyNetwork) {
+  const clnyToken = await Token.new("Colony Network Token", "CLNY", 18);
+  await colonyNetwork.createMetaColony(clnyToken.address);
+  const metaColonyAddress = await colonyNetwork.getMetaColony();
+  const tokenLockingAddress = await colonyNetwork.getTokenLocking();
+  // Second parameter is the vesting contract which is not the subject of this integration testing so passing in 0x0
+  const tokenAuthority = await TokenAuthority.new(clnyToken.address, 0x0, metaColonyAddress, tokenLockingAddress);
+  await clnyToken.setAuthority(tokenAuthority.address);
+  // Set the CLNY token owner to a dedicated account representing the Colony Multisig
+  const accounts = await web3GetAccounts();
+  await clnyToken.setOwner(accounts[11]);
+  const clnyTokenAddress = clnyToken.address;
+  return { metaColonyAddress, clnyTokenAddress };
+}
+
+export async function setupMetaColonyWithUNLockedCLNYToken(colonyNetwork) {
+  await setupMetaColonyWithLockedCLNYToken(colonyNetwork);
+  // TODO Unlock CLNY
+  // const metaColonyAddress = await colonyNetwork.getMetaColony();
 }

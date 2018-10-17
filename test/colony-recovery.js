@@ -2,9 +2,10 @@
 
 import { SPECIFICATION_HASH } from "../helpers/constants";
 
-import { web3GetStorageAt, checkErrorRevert } from "../helpers/test-helper";
+import { web3GetStorageAt, checkErrorRevert, getTokenArgs } from "../helpers/test-helper";
 
 import { setupColonyVersionResolver } from "../helpers/upgradable-contracts";
+import { setupMetaColonyWithLockedCLNYToken } from "../helpers/test-data-generator";
 
 const IColony = artifacts.require("IColony");
 const Colony = artifacts.require("Colony");
@@ -14,13 +15,11 @@ const IColonyNetwork = artifacts.require("IColonyNetwork");
 const ColonyFunding = artifacts.require("ColonyFunding");
 const ColonyTask = artifacts.require("ColonyTask");
 const ContractRecovery = artifacts.require("ContractRecovery");
-const Token = artifacts.require("Token");
-const TokenAuthority = artifacts.require("TokenAuthority");
+const ERC20ExtendedToken = artifacts.require("ERC20ExtendedToken");
 
 contract("Colony", accounts => {
   let colony;
   let colonyNetwork;
-  let clnyToken;
 
   before(async () => {
     const resolverColonyNetworkDeployed = await Resolver.deployed();
@@ -35,11 +34,7 @@ contract("Colony", accounts => {
 
     await setupColonyVersionResolver(colonyTemplate, colonyTask, colonyFunding, contractRecovery, resolver, colonyNetwork);
 
-    clnyToken = await Token.new("Colony Network Token", "CLNY", 18);
-    await colonyNetwork.createMetaColony(clnyToken.address);
-    const metaColonyAddress = await colonyNetwork.getMetaColony();
-    const tokenAuthority = await TokenAuthority.new(clnyToken.address, 0x0, metaColonyAddress, 0x0);
-    await clnyToken.setAuthority(tokenAuthority.address);
+    await setupMetaColonyWithLockedCLNYToken(colonyNetwork);
 
     // Jumping through these hoops to avoid the need to rewire ReputationMiningCycleResolver.
     const deployedColonyNetwork = await IColonyNetwork.at(EtherRouter.address);
@@ -50,7 +45,9 @@ contract("Colony", accounts => {
   });
 
   beforeEach(async () => {
-    const { logs } = await colonyNetwork.createColony(clnyToken.address);
+    const tokenArgs = getTokenArgs();
+    const token = await ERC20ExtendedToken.new(...tokenArgs);
+    const { logs } = await colonyNetwork.createColony(token.address);
     const { colonyAddress } = logs[0].args;
     colony = await IColony.at(colonyAddress);
   });

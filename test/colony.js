@@ -44,7 +44,8 @@ import {
   setupFundedTask,
   executeSignedTaskChange,
   executeSignedRoleAssignment,
-  makeTask
+  makeTask,
+  setupMetaColonyWithLockedCLNYToken
 } from "../helpers/test-data-generator";
 
 import { setupColonyVersionResolver } from "../helpers/upgradable-contracts";
@@ -63,8 +64,6 @@ const ColonyFunding = artifacts.require("ColonyFunding");
 const ColonyTask = artifacts.require("ColonyTask");
 const ContractRecovery = artifacts.require("ContractRecovery");
 const IReputationMiningCycle = artifacts.require("IReputationMiningCycle");
-const Token = artifacts.require("Token");
-const TokenAuthority = artifacts.require("TokenAuthority");
 
 contract("Colony", accounts => {
   const MANAGER = accounts[0];
@@ -91,11 +90,7 @@ contract("Colony", accounts => {
 
     await setupColonyVersionResolver(colonyTemplate, colonyTask, colonyFunding, contractRecovery, resolver, colonyNetwork);
 
-    const clnyToken = await Token.new("Colony Network Token", "CLNY", 18);
-    await colonyNetwork.createMetaColony(clnyToken.address);
-    const metaColonyAddress = await colonyNetwork.getMetaColony();
-    const tokenAuthority = await TokenAuthority.new(token.address, 0x0, metaColonyAddress, 0x0);
-    await clnyToken.setAuthority(tokenAuthority.address);
+    await setupMetaColonyWithLockedCLNYToken(colonyNetwork);
 
     // Jumping through these hoops to avoid the need to rewire ReputationMiningCycleResolver.
     const deployedColonyNetwork = await IColonyNetwork.at(EtherRouter.address);

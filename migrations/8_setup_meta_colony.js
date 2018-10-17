@@ -9,7 +9,7 @@ const ITokenLocking = artifacts.require("./ITokenLocking");
 const EtherRouter = artifacts.require("./EtherRouter");
 const TokenAuthority = artifacts.require("./TokenAuthority");
 
-module.exports = deployer => {
+module.exports = (deployer, network, accounts) => {
   // Create the meta colony
   let colonyNetwork;
   let tokenLockingAddress;
@@ -48,10 +48,7 @@ module.exports = deployer => {
     .then(() => colonyNetwork.getSkillCount())
     .then(async skillCount => {
       assert.equal(skillCount.toNumber(), 3);
-      // Doing an async / await here because we need this promise to resolve (i.e. tx to mine) and we also want
-      // to log the address. It's either do this, or do `return colonyNetwork.getMetaColony()` twice. I'm easy on
-      // which we use.
-      await clnyToken.setOwner(metaColonyAddress);
+      await clnyToken.setOwner(accounts[11]);
       console.log("### Meta Colony created at", metaColonyAddress);
     })
     .catch(err => {

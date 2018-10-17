@@ -6,7 +6,7 @@ import bnChai from "bn-chai";
 
 import { MANAGER_PAYOUT, WORKER_PAYOUT } from "../helpers/constants";
 import { checkErrorRevert } from "../helpers/test-helper";
-import { fundColonyWithTokens, setupRatedTask } from "../helpers/test-data-generator";
+import { fundColonyWithTokens, setupRatedTask, setupMetaColonyWithLockedCLNYToken } from "../helpers/test-data-generator";
 
 import { setupColonyVersionResolver } from "../helpers/upgradable-contracts";
 
@@ -20,9 +20,9 @@ const Resolver = artifacts.require("Resolver");
 const Colony = artifacts.require("Colony");
 const ColonyFunding = artifacts.require("ColonyFunding");
 const ColonyTask = artifacts.require("ColonyTask");
-const Token = artifacts.require("Token");
 const IReputationMiningCycle = artifacts.require("IReputationMiningCycle");
 const ContractRecovery = artifacts.require("ContractRecovery");
+const Token = artifacts.require("Token");
 
 contract("Colony Reputation Updates", accounts => {
   const MANAGER = accounts[0];
@@ -32,8 +32,8 @@ contract("Colony Reputation Updates", accounts => {
 
   let colonyNetwork;
   let metaColony;
+  let clnyToken;
   let resolverColonyNetworkDeployed;
-  let colonyToken;
   let inactiveReputationMiningCycle;
 
   before(async () => {
@@ -51,16 +51,15 @@ contract("Colony Reputation Updates", accounts => {
     colonyNetwork = await IColonyNetwork.at(etherRouter.address);
     await setupColonyVersionResolver(colony, colonyTask, colonyFunding, contractRecovery, resolver, colonyNetwork);
 
-    colonyToken = await Token.new("Colony Network Token", "CLNY", 18);
-    await colonyNetwork.createMetaColony(colonyToken.address);
-    const metaColonyAddress = await colonyNetwork.getMetaColony();
-    await colonyToken.setOwner(metaColonyAddress);
+    const { metaColonyAddress, clnyTokenAddress } = await setupMetaColonyWithLockedCLNYToken(colonyNetwork);
     metaColony = await IColony.at(metaColonyAddress);
+    clnyToken = await Token.at(clnyTokenAddress);
+
     const amount = new BN(10)
       .pow(new BN(18))
       .mul(new BN(1000))
       .toString();
-    await fundColonyWithTokens(metaColony, colonyToken, amount);
+    await fundColonyWithTokens(metaColony, clnyToken.address, amount);
 
     // Jumping through these hoops to avoid the need to rewire ReputationMiningCycleResolver.
     const deployedColonyNetwork = await IColonyNetwork.at(EtherRouter.address);
@@ -225,7 +224,7 @@ contract("Colony Reputation Updates", accounts => {
     it("should revert on reputation amount overflow", async () => {
       // Fund colony with maximum possible int number of tokens
       const maxUIntNumber = new BN(2).pow(new BN(255)).sub(new BN(1));
-      await fundColonyWithTokens(metaColony, colonyToken, maxUIntNumber);
+      await fundColonyWithTokens(metaColony, clnyToken.address, maxUIntNumber);
       // Split the tokens as payouts between the manager and worker
       const managerPayout = new BN("2");
       const evaluatorPayout = new BN("1");
@@ -233,7 +232,7 @@ contract("Colony Reputation Updates", accounts => {
       const taskId = await setupRatedTask({
         colonyNetwork,
         colony: metaColony,
-        token: colonyToken,
+        token: clnyToken.address,
         managerPayout,
         evaluatorPayout,
         workerPayout,
@@ -241,7 +240,7 @@ contract("Colony Reputation Updates", accounts => {
       });
 
       // Check the task pot is correctly funded with the max amount
-      const taskPotBalance = await metaColony.getPotBalance(2, colonyToken.address);
+      const taskPotBalance = await metaColony.getPotBalance(2, clnyToken.address);
       expect(taskPotBalance).to.eq.BN(maxUIntNumber);
 
       await checkErrorRevert(metaColony.finalizeTask(taskId), "colony-math-unsafe-int-mul");

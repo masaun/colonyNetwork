@@ -655,7 +655,7 @@ contract("Colony Funding", accounts => {
         totalAmountSqrt.toString()
       ];
 
-      let addr = await colonyNetwork.getReputationMiningCycle.call(true);
+      let addr = await colonyNetwork.getReputationMiningCycle(true);
       await forwardTime(3600, this);
       let repCycle = await IReputationMiningCycle.at(addr);
       await repCycle.submitRootHash("0x00", 0, 10);
