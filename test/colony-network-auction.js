@@ -4,17 +4,24 @@ import chai from "chai";
 import bnChai from "bn-chai";
 
 import { getTokenArgs, web3GetTransactionReceipt, web3GetCode, checkErrorRevert, forwardTime, getBlockTime } from "../helpers/test-helper";
-import { giveUserCLNYTokens, setupMetaColonyWithLockedCLNYToken } from "../helpers/test-data-generator";
+import { giveUserCLNYTokens, setupMetaColonyWithUNLockedCLNYToken } from "../helpers/test-data-generator";
+
+const { setupColonyVersionResolver } = require("../helpers/upgradable-contracts");
 
 const { expect } = chai;
 chai.use(bnChai(web3.utils.BN));
 
 const EtherRouter = artifacts.require("EtherRouter");
+const Resolver = artifacts.require("Resolver");
+const Colony = artifacts.require("Colony");
+const ColonyFunding = artifacts.require("ColonyFunding");
+const ColonyTask = artifacts.require("ColonyTask");
 const IColony = artifacts.require("IColony");
 const IColonyNetwork = artifacts.require("IColonyNetwork");
 const DutchAuction = artifacts.require("DutchAuction");
 const ERC20ExtendedToken = artifacts.require("ERC20ExtendedToken");
 const Token = artifacts.require("Token");
+const ContractRecovery = artifacts.require("ContractRecovery");
 
 contract("Colony Network Auction", accounts => {
   const BIDDER_1 = accounts[1];
@@ -33,12 +40,23 @@ contract("Colony Network Auction", accounts => {
   before(async () => {
     quantity = new BN(10).pow(new BN(36)).muln(3);
     clnyNeededForMaxPriceAuctionSellout = new BN(10).pow(new BN(54)).muln(3);
-    const etherRouter = await EtherRouter.deployed();
-    colonyNetwork = await IColonyNetwork.at(etherRouter.address);
   });
 
   beforeEach(async () => {
-    const { metaColonyAddress, clnyTokenAddress } = await setupMetaColonyWithLockedCLNYToken(colonyNetwork);
+    const colony = await Colony.new();
+    const resolver = await Resolver.new();
+    const colonyFunding = await ColonyFunding.new();
+    const colonyTask = await ColonyTask.new();
+    const contractRecovery = await ContractRecovery.new();
+
+    const etherRouter = await EtherRouter.new();
+    const resolverColonyNetworkDeployed = await Resolver.deployed();
+    await etherRouter.setResolver(resolverColonyNetworkDeployed.address);
+    colonyNetwork = await IColonyNetwork.at(etherRouter.address);
+
+    await setupColonyVersionResolver(colony, colonyTask, colonyFunding, contractRecovery, resolver, colonyNetwork);
+
+    const { metaColonyAddress, clnyTokenAddress } = await setupMetaColonyWithUNLockedCLNYToken(colonyNetwork);
     metaColony = await IColony.at(metaColonyAddress);
     clnyToken = await Token.at(clnyTokenAddress);
 
@@ -209,9 +227,13 @@ contract("Colony Network Auction", accounts => {
   describe("when bidding", async () => {
     it("can bid", async () => {
       await giveUserCLNYTokens(colonyNetwork, BIDDER_1, "1000000000000000000");
+      console.log("1");
       await clnyToken.approve(tokenAuction.address, "1000000000000000000", { from: BIDDER_1 });
+      console.log("2");
       await tokenAuction.bid("1000000000000000000", { from: BIDDER_1 });
+      console.log("3");
       const bid = await tokenAuction.bids(BIDDER_1);
+      console.log("4");
       assert.equal(bid, "1000000000000000000");
       const bidCount = await tokenAuction.bidCount();
       assert.equal(bidCount.toNumber(), 1);
